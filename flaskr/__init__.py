@@ -1,20 +1,32 @@
-from flask import Flask, g
+from flask import Flask, g, render_template
 from . import db, _cmd
 
-def create_app(config_filename):
+def create_app():
     app = Flask(__name__)
-#    if config_filename:
-#        app.config.from_pyfile(config_filename)
+    app.config.from_object('config')
+    app.config.from_object('config.development')
 
-    #TODO: add db init_app
-#    db.init_app(app)
 
-    g.session = db.get_session()
+    # register blueprints
+    from . import auth
+    app.register_blueprint(auth.bp)
 
-    @app.route("/")
-    def index():
-        return '{"content": "Hello, World"}'
-
+    
     _cmd.init_app(app)
+
+    @app.before_request
+    def get_session():
+        if not g.get('Session'):
+            g.Session = db.get_session_factory()
+
+#    @app.teardown_request
+#    def pop_session():
+#        if g.get('Session'):
+#            g.pop(Session)
+    
+
+    @app.route('/')
+    def index():
+        return render_template('index.html')
 
     return app
