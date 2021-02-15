@@ -1,0 +1,6 @@
+DB_ADDR='localhost'
+DB_URI='mysql+pymysql://'
+DB_ADMIN='chan'
+DB_PASS='diy.2002'
+DB_NAME='test_db'
+SECRET_KEY='ALongSecretIsSeemlySafe'
