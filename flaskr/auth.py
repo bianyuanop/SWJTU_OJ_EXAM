@@ -45,7 +45,7 @@ class Register(Resource):
     """Register."""
 
     """
-    @api {post} /auth/register Register
+    @api {post} /api/auth/register Register
     @apiName Register
     @apiGroup Auth
 
@@ -109,7 +109,7 @@ class Register(Resource):
 
 class Login(Resource):
     """
-    @api {post} /auth/login Login
+    @api {post} /api/auth/login Login
     @apiName Login
     @apiGroup Auth
 
@@ -186,7 +186,7 @@ class Login(Resource):
 
 class Logout(Resource):
     """
-    @api {get} /auth/logout Logout
+    @api {get} /api/auth/logout Logout
     @apiName Logout
     @apiGroup Auth
 
