@@ -1,14 +1,11 @@
+from flask import Flask, Blueprint, session
+from flask_restful import Api, Resource
 
+bp = Blueprint("exam", __name__)
+api = Api(bp)
 
+class Exam(Resource):
+    pass
 
-def sub_score_parse(sub_score_string):
-    """sub_score_parse.
-
-    :param sub_score_string:
-        
-    """
-
-
-    
-    
-
+class Exams(Resource):
+    pass

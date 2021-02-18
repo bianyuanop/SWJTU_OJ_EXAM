@@ -1,3 +1,4 @@
+import os
 from flask import Flask, g, render_template
 from . import db, _cmd
 
@@ -5,6 +6,12 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object('config')
     app.config.from_object('config.development')
+    app.instance_path = 'instance'
+
+    if not os.path.exists(app.instance_path):
+        os.mkdir(
+                os.path.join(os.getcwd(), app.instance_path)
+                )
 
 
     # register blueprints

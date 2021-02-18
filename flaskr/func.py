@@ -25,3 +25,6 @@ def check_spell(auth_string):
 
     return True
 
+def escape(string):
+    #TODO: adding character safe check
+    return string

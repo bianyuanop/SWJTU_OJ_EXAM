@@ -1,13 +1,15 @@
 import jwt
 import datetime
 from flask import current_app, Blueprint, session, request, g
-from flask_restful import Api, Resource, url_for
+from flask_restful import Api, Resource
 from passlib.hash import pbkdf2_sha256
 from . import db, func
 from . import parser
+from .log import Logger
 
 bp = Blueprint('auth', __name__)
 api = Api(bp)
+l = Logger()
 
 @bp.before_app_request
 def load_lobbed_in_user():
@@ -16,11 +18,14 @@ def load_lobbed_in_user():
         payload = token_retrieve(token)
         g.user  = {
                 "username": payload['username'],
-                "user_id":  payload['user_id']
+                "user_id":  payload['user_id'],
+                "token": payload['token']
                 }
         print("Finish before request")
     except:
         #TODO: adding log here 
+        
+        l.error("{AUTH} load user session error.")
         g.user = None
     
 def token_retrieve(token):
@@ -122,6 +127,14 @@ class Login(Resource):
     @apiVersion 0.0.1
     """
     def post(self):
+        if g.user:
+            msg = {
+                    "i_status": 0,
+                    "err_code": 5,
+                    "msg": "Already login."
+                    }
+            pass
+            
         args = parser.login_parser.parse_args(strict=True)
         username = args.get("username") 
         password = args.get("password") 
@@ -137,15 +150,6 @@ class Login(Resource):
         safe = func.check_spell(username) and func.check_spell(password)
 
         if safe:
-            if 'username' in session:
-                msg = {
-                        "i_status": 0,
-                        "err_code": 5,
-                        "msg": "Already login."
-                        }
-                return msg
-
-
             s = g.Session()
             try:
                 user = s.query(db.Users).filter(db.Users.name == username).one()
