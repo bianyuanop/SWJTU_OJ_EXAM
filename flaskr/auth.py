@@ -9,42 +9,31 @@ from .log import Logger
 
 bp = Blueprint('auth', __name__)
 api = Api(bp)
-l = Logger()
+l = Logger(location='{AUTH}')
 
 @bp.before_app_request
 def load_lobbed_in_user():
     token = session.get('token')
+    if  not token:
+        return 
+
+
+    l.info(token) 
     try:
-        payload = token_retrieve(token)
+        payload = func.token_retrieve(token)
+        l.info(str(payload))
         g.user  = {
-                "username": payload['username'],
-                "user_id":  payload['user_id'],
-                "token": payload['token']
+                "user_id":  payload['sub'],
                 }
         print("Finish before request")
-    except:
-        #TODO: adding log here 
-        
-        l.error("{AUTH} load user session error.")
+    except jwt.exceptions.ExpiredSignatureError:
+        l.warn("token expired.")
+        g.user = None
+        pass
+    except Exception as e:
+        l.error("load user session error." + str(e))
         g.user = None
     
-def token_retrieve(token):
-    return jwt.decode(token, app.config['SECRET_KEY'], algorithm="HS256")
-
-def token_gen(user_id):
-    payload = {
-            "exp": datetime.datetime.now() + datetime.timedelta(days=7),
-            "iat": datetime.datetime.now(),
-            "sub": user_id
-            }
-    token = jwt.encode(
-        payload,
-        current_app.config['SECRET_KEY'],
-        algorithm='HS256'
-        )
-
-    return token
-
 
 class Register(Resource):
     """Register."""
@@ -127,7 +116,7 @@ class Login(Resource):
     @apiVersion 0.0.1
     """
     def post(self):
-        if g.user:
+        if g.get('user'):
             msg = {
                     "i_status": 0,
                     "err_code": 5,
@@ -164,10 +153,9 @@ class Login(Resource):
         
                     session['username'] = username
                     session['user_id'] = user.id
-                    session['token'] = token_gen(user.id)
+                    session['token'] = func.token_gen(user.id)
 
                     g.user = {
-                            "username": username,
                             "user_id": user.id
                             }
 
@@ -177,7 +165,9 @@ class Login(Resource):
                             "err_code": 4,
                             "msg": "password err."
                             }
-            except:
+            except Exception as e:
+                l.error(e)
+
                 msg = {
                         "i_status": 0,
                         "err_code": 3,

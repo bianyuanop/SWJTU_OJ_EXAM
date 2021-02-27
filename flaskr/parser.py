@@ -17,3 +17,8 @@ user_query_parser.add_argument('u_id', type=int)
 user_query_parser.add_argument('username', type=str)
 user_query_parser.add_argument('student_id', type=int)
 
+## admin login parser
+admin_login_parser = reqparse.RequestParser()
+admin_login_parser.add_argument('admin_name', type=str)
+admin_login_parser.add_argument('password', type=int)
+

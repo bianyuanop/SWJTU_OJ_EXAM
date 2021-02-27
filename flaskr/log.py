@@ -15,9 +15,10 @@ err_levels = (
         '[INFO]'
         )
 class Logger:
-    def __init__(self, dir_name=log_dir, filename=log_filename):
+    def __init__(self, dir_name=log_dir, filename=log_filename, location="None"):
+        self.location = location
         self._format_string = '''
-            echo "{date}, {err_level} -> {log}" >> {filename}
+            echo " {location} - {date}, {err_level} -> {log}" >> {filename}
         '''
 
         self.file_location = os.path.join(dir_name, filename)
@@ -28,19 +29,21 @@ class Logger:
         if not os.path.exists(self.file_location):
             os.system('touch ' + self.file_location)
 
-        now = datetime.now()
-        log_string = self._format_string.format(
-                date      = now.strftime("%Y/%m/%d %H:%M:%S"),
-                err_level = err_levels[2],
-                log       = "Creating log file.",
-                filename  = self.file_location
-                )
+            now = datetime.now()
+            log_string = self._format_string.format(
+                    location  = self.location,
+                    date      = now.strftime("%Y/%m/%d %H:%M:%S"),
+                    err_level = err_levels[2],
+                    log       = "Creating log file.",
+                    filename  = self.file_location
+                    )
 
-        os.system(log_string)
+            os.system(log_string)
         
     def error(self, log):
         now = datetime.now()
         log_string = self._format_string.format(
+                location = self.location,
                 date      = now.strftime("%Y/%m/%d %H:%M:%S"),
                 err_level = err_levels[0],
                 log       = log,
@@ -52,6 +55,7 @@ class Logger:
     def warn(self, log):
         now = datetime.now()
         log_string = self._format_string.format(
+                location = self.location,
                 date      = now.strftime("%Y/%m/%d %H:%M:%S"),
                 err_level = err_levels[1],
                 log       = log,
@@ -63,6 +67,7 @@ class Logger:
     def sys(self, log):
         now = datetime.now()
         log_string = self._format_string.format(
+                location = self.location,
                 date      = now.strftime("%Y/%m/%d %H:%M:%S"),
                 err_level = err_levels[2],
                 log       = log,
@@ -74,6 +79,7 @@ class Logger:
     def info(self, log):
         now = datetime.now()
         log_string = self._format_string.format(
+                location = self.location,
                 date      = now.strftime("%Y/%m/%d %H:%M:%S"),
                 err_level = err_levels[3],
                 log       = log,

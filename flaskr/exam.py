@@ -4,8 +4,15 @@ from flask_restful import Api, Resource
 bp = Blueprint("exam", __name__)
 api = Api(bp)
 
-class Exam(Resource):
-    pass
 
+#The get method is about to return a problem set of a exam
+class Exam(Resource):
+
+    def get(self):
+        pass
+
+#return a list of exams
 class Exams(Resource):
-    pass
+    
+    def get(self):
+        pass
