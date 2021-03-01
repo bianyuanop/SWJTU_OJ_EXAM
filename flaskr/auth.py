@@ -15,6 +15,7 @@ l = Logger(location='{AUTH}')
 def load_lobbed_in_user():
     token = session.get('token')
     if  not token:
+        l.info("session has no token")
         return 
 
 

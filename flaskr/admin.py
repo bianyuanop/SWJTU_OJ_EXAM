@@ -27,7 +27,7 @@ class AdminAuth(Resource):
     @apiVersion 0.0.0
     """
     def post(self):
-        if g.admin:
+        if g.get('admin'):
             msg = {
                     "i_status": 0,
                     "err_code": 5,
@@ -38,10 +38,39 @@ class AdminAuth(Resource):
         admin_name = args.get('admin_name') or ""
         password = args.get('password') or ""
 
+        if not (admin_name and password):
+            msg = {
+                    "i_status": 0,
+                    "err_code": 0,
+                    "msg": "admin username or password not provided when admin"
+                    }
+            return msg
+        
+        safe = check_spell(admin_name) and check_spell(password)
+        if not safe:
+            msg = {
+                    "i_status": 0,
+                    "err_code": 7,
+                    "msg": "password or username not format well when."
+                    }
+            return msg
+        
+        #TODO: say auth.py, the same
+        try:
+            s = g.Session()
+            
+        except:
+            #TODO: add a log here
+            pass
+        finally:
+            s.close()
 
 
                  
 
+#Users charge
+#Users charge based on User charge
+#TODO: use sqlalchemy query delete, add, update, get
 class UserCharge(Resource):
 
     def post(self):
@@ -61,6 +90,7 @@ class UsersCharge(Resource):
     def delete(self):
         pass
     
+# Same with UserCharge
 class AdminCharge(Resource):
 
     def post(self):
@@ -117,6 +147,7 @@ config_example = {
             ]
         }
 # TODO: need a more detailed configure of a exam
+#Mydo
 class ExamCharge(Resource):
     
     def post(self):
