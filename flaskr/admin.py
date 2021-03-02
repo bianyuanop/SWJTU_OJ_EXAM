@@ -1,8 +1,12 @@
 import jwt
+import json
 from flask import Flask, Blueprint, session, g
 from flask_restful import Api, Resource
-from .parser import user_query_parser, admin_login_parser
-from . import db
+from .parser import user_query_parser, admin_login_parser, exam_charge_parser
+from . import db, func
+from .log import Logger
+
+l = Logger(location='ADMIN')
 
 bp = Blueprint("admin", __name__)
 api = Api(bp)
@@ -120,38 +124,91 @@ class EventCharge(Resource):
 # - exam duration
 # - point weight/percentage of each problem
 # a Example format
-config_example = {
-        'start_time': "a string with time format contains %Y/%m/%d %H:%M:%S",
-        'duration': "%Y/%m/%d %H:%M:%S",
-        'problem_set_config': [
-            {
-                'type': 'select',
-                'number': 20,
-                'percentage_tatol': 0.4
-                },
-            {
-                'type': 'fill',
-                'number': 10,
-                'percentage_tatol': 0.2
-                },
-            {
-                'type': 'fix',
-                'number': 10,
-                'percentage_tatol': 0.2
-                },
-            {
-                'type': 'coding',
-                'number': 2,
-                'percentage_tatol': 0.2
-                },
-            ]
-        }
-# TODO: need a more detailed configure of a exam
-#Mydo
+#config_example = {
+#        'title': 'aTitle',
+#        'start_time': "a string with time format contains %Y/%m/%d %H:%M:%S",
+#        'duration': "%H:%M:%S",
+#        # the problem setting must be format like this and convert it to string
+#        'problem_set_config': [
+#            {
+#                'type': 'select',
+#                'number': 20,
+#                'percentage_tatol': 0.4
+#                },
+#            {
+#                'type': 'fill',
+#                'number': 10,
+#                'percentage_tatol': 0.2
+#                },
+#            {
+#                'type': 'fix',
+#                'number': 10,
+#                'percentage_tatol': 0.2
+#                },
+#            {
+#                'type': 'coding',
+#                'number': 2,
+#                'percentage_tatol': 0.2
+#                },
+#            ]
+#        }
+# Need request test
 class ExamCharge(Resource):
     
     def post(self):
-        pass
+        args = exam_charge_parser.parse_args(strict=True)
+        err = False
+        try:
+            config = {
+                'start_time': args.get('start_time'),
+                'duration': args.get('duration'),
+                'problem_set_config': json.dumps(args.get('problem_set_config'))
+            }
+            exam_configure = func.question_set_config_gen(config)
+        except Exception as e:
+            l.error(str(e))
+            err = True
+        
+        if err:
+            msg = {
+                    "i_status": 0,
+                    "err_code": 8,
+                    "msg": "Configure format err."
+                    }
+            return msg
+        
+
+        try:
+            s = g.Session()
+            exam = db.Exams(
+                name = args.get('title'),
+                start_t = exam_configure.get('start_time'),
+                end_t = exam_configure.get('end_time'),
+                info = exam_configure.get('info'),
+                describe = args.get('desc')
+            ) 
+        except Exception as e:
+            err = True
+            l.error(e)
+        finally:
+            s.close()
+
+        if err:
+            msg = {
+                    "i_status": 0,
+                    "err_code": 999,
+                    "msg": "General Error, no idea how would it happend."
+                    }
+            return msg
+
+        msg = {
+                "i_status": 1,
+                "err_code": -1,
+                "msg": ""
+                }
+        return msg
+
+
 
     def get(self):
         pass

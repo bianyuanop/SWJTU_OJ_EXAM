@@ -22,3 +22,10 @@ admin_login_parser = reqparse.RequestParser()
 admin_login_parser.add_argument('admin_name', type=str)
 admin_login_parser.add_argument('password', type=int)
 
+#Exam Charge parsers 
+## Exam charge parser - post
+exam_charge_parser = reqparse.RequestParser()
+exam_charge_parser.add_argument('start_time', type=str)
+exam_charge_parser.add_argument('duration', type=str)
+exam_charge_parser.add_argument('problem_set_config', type=str)
+
