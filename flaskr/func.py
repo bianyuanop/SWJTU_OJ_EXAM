@@ -1,7 +1,8 @@
 import datetime
 import jwt
 from flask import current_app, g
-from . import db
+from flask.cli import with_appcontext
+from . import db 
 from .log import Logger
 from sqlalchemy import func
 import json
@@ -115,6 +116,7 @@ def question_set_config_gen(config):
         for p_conf in question_set_config:
             t = p_conf.get('type')
             count = p_conf.get('number')
+            l.debug("CONF:" + str(p_conf))
             if count < 0:
                 l.error('the configure setting is format err.')
                 raise Exception
@@ -133,8 +135,7 @@ def question_set_config_gen(config):
                 problem_set[t].append(problem.id)
 
     except Exception as e:
-        print(e)
-        pass
+        l.error(e)
     finally:
         s.close()
 
@@ -148,32 +149,31 @@ def question_set_config_gen(config):
     return configure
 
 
-if __name__ == '__main__':
-    config = {
-        'start_time': '2021/03/02 09:57:00',
-        'duration': '02:00:00',
-        'problem_set_config': [
-            {
-                'type': 'select',
-                'number': 20,
-                'percentage_tatol': 0.4
-                },
-            {
-                'type': 'fill',
-                'number': 10,
-                'percentage_tatol': 0.2
-                },
-            {
-                'type': 'fix',
-                'number': 10,
-                'percentage_tatol': 0.2
-                },
-            {
-                'type': 'coding',
-                'number': 2,
-                'percentage_tatol': 0.2
-                },
-            ]
-    }
-
-    
+#config = {
+#    "start_time": "2021/03/02 09:57:00",
+#    "duration": "02:00:00",
+#    "problem_set_config": [
+#        {
+#            "type": "select",
+#            "number": 20,
+#            "percentage_tatol": 0.4
+#            },
+#        {
+#            "type": "fill",
+#            "number": 10,
+#            "percentage_tatol": 0.2
+#            },
+#        {
+#            "type": "fix",
+#            "number": 10,
+#            "percentage_tatol": 0.2
+#            },
+#        {
+#            "type": "coding",
+#            "number": 2,
+#            "percentage_tatol": 0.2
+#            },
+#        ]
+#}
+#print( question_set_config_gen(config) )
+#

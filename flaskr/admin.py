@@ -1,6 +1,6 @@
 import jwt
 import json
-from flask import Flask, Blueprint, session, g
+from flask import Flask, Blueprint, session, g, current_app
 from flask_restful import Api, Resource
 from .parser import user_query_parser, admin_login_parser, exam_charge_parser
 from . import db, func
@@ -128,7 +128,7 @@ class EventCharge(Resource):
 #        'title': 'aTitle',
 #        'start_time': "a string with time format contains %Y/%m/%d %H:%M:%S",
 #        'duration': "%H:%M:%S",
-#        # the problem setting must be format like this and convert it to string
+##        # the problem setting must be format like this and convert it to string
 #        'problem_set_config': [
 #            {
 #                'type': 'select',
@@ -154,15 +154,15 @@ class EventCharge(Resource):
 #        }
 # Need request test
 class ExamCharge(Resource):
-    
     def post(self):
         args = exam_charge_parser.parse_args(strict=True)
         err = False
         try:
+            l.debug( args.get('problem_set_config')  + str(type(args.get('problem_set_config'))))
             config = {
                 'start_time': args.get('start_time'),
                 'duration': args.get('duration'),
-                'problem_set_config': json.dumps(args.get('problem_set_config'))
+                'problem_set_config': json.loads(args.get('problem_set_config'))
             }
             exam_configure = func.question_set_config_gen(config)
         except Exception as e:
@@ -178,15 +178,17 @@ class ExamCharge(Resource):
             return msg
         
 
+        s = g.Session()
         try:
-            s = g.Session()
             exam = db.Exams(
-                name = args.get('title'),
-                start_t = exam_configure.get('start_time'),
-                end_t = exam_configure.get('end_time'),
-                info = exam_configure.get('info'),
+                name     = args.get('title'),
+                start_t  = exam_configure.get('start_time'),
+                end_t    = exam_configure.get('end_time'),
+                info     = str(exam_configure),
                 describe = args.get('desc')
             ) 
+            s.add(exam)
+            s.commit()
         except Exception as e:
             err = True
             l.error(e)
@@ -227,3 +229,6 @@ class ExamsCharge(Resource):
     
     def delete(self):
         pass
+
+api.add_resource(ExamCharge, '/admin/exam-charge')
+

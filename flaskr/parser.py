@@ -26,6 +26,8 @@ admin_login_parser.add_argument('password', type=int)
 ## Exam charge parser - post
 exam_charge_parser = reqparse.RequestParser()
 exam_charge_parser.add_argument('start_time', type=str)
+exam_charge_parser.add_argument('title', type=str)
+exam_charge_parser.add_argument('desc', type=str)
 exam_charge_parser.add_argument('duration', type=str)
 exam_charge_parser.add_argument('problem_set_config', type=str)
 
