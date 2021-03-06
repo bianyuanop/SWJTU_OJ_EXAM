@@ -158,7 +158,7 @@ class ExamCharge(Resource):
         args = exam_charge_parser.parse_args(strict=True)
         err = False
         try:
-            l.debug( args.get('problem_set_config')  + str(type(args.get('problem_set_config'))))
+            l.debug(str(args))
             config = {
                 'start_time': args.get('start_time'),
                 'duration': args.get('duration'),
@@ -168,15 +168,12 @@ class ExamCharge(Resource):
         except Exception as e:
             l.error(str(e))
             err = True
-        
-        if err:
             msg = {
                     "i_status": 0,
                     "err_code": 8,
                     "msg": "Configure format err."
                     }
             return msg
-        
 
         s = g.Session()
         try:

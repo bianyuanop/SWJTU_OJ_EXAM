@@ -114,6 +114,7 @@ def question_set_config_gen(config):
     s = g.Session()
     try:
         for p_conf in question_set_config:
+            print(p_conf)
             t = p_conf.get('type')
             count = p_conf.get('number')
             l.debug("CONF:" + str(p_conf))
