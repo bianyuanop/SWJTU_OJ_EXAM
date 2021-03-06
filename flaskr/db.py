@@ -1,4 +1,5 @@
 import json
+import datetime
 from flask import current_app 
 from sqlalchemy import Column, DateTime, String, Integer, ForeignKey, func, create_engine
 from sqlalchemy.orm import relationship, backref, sessionmaker
@@ -144,7 +145,13 @@ class AlchemyEncoder(json.JSONEncoder):
             for field in [x for x in dir(obj) if not x.startswith('_') and x != 'metadata']:
                 data = obj.__getattribute__(field)
                 try:
-                    json.dumps(data) # this will fail on non-encodable values, like other classes
+                    # More data convert place here
+                    if type(data) is datetime.datetime:
+                        data = str(data)
+                    else:
+                        # this will fail on non-encodable values, like other classes
+                        data = json.dumps(data) 
+
                     fields[field] = data
                 except TypeError:
                     fields[field] = None

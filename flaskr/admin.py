@@ -2,7 +2,7 @@ import jwt
 import json
 from flask import Flask, Blueprint, session, g, current_app
 from flask_restful import Api, Resource
-from .parser import user_query_parser, admin_login_parser, exam_charge_parser
+from .parser import user_query_parser, admin_login_parser, exam_charge_parser, exam_charge_parser_get, exam_charge_parser_put, exam_charge_parser_delete, exams_charge_delete
 from . import db, func
 from .log import Logger
 
@@ -154,6 +154,22 @@ class EventCharge(Resource):
 #        }
 # Need request test
 class ExamCharge(Resource):
+    """
+    @api {post} /api/exam/add ExamAdd
+    @apiName ExamPost
+    @apiGroup Admin
+
+    @apiParam {String} start_time Exam start time
+    @apiParam {String} title Exam title.
+    @apiParam {String} desc Exam describe.
+    @apiParam {String} duration Exam duration.
+    @apiParam {String} problem_set_config Problem set config, details can be seen in the doc.
+    
+    @apiSuccess {Number} i_status Instruction success status.
+    @apiSuccess {Number} err_code Error code.
+    @apiSuccess {String} msg Message.
+    @apiVersion 0.0.1
+    """
     def post(self):
         args = exam_charge_parser.parse_args(strict=True)
         err = False
@@ -207,25 +223,131 @@ class ExamCharge(Resource):
                 }
         return msg
 
-
-
     def get(self):
-        pass
+        args = exam_charge_parser_get.parse_args(strict=True)
+        exam_id = args.get('exam_id')
+        s = g.Session()
+        try:
+            exam = s.query(db.Exams).filter(db.Exams.id == exam_id).first()
+            msg = {
+                    "i_status": 1,
+                    "err_code": -1,
+                    "msg": "",
+                    # The AlchemyEncode Serilizer has no feature of decoding datetime
+                    "deliver": json.dumps(exam, cls=db.AlchemyEncoder)
+                    }
+        except Exception as e:
+            l.error(str(e)) 
+            msg = {
+                    "i_status": 0,
+                    "err_code": 998,
+                    "msg": "Query error.",
+                    }
+        finally:
+            s.close()
+
+
+        return msg
+        
 
     def delete(self):
-        pass
+        args = exam_charge_parser_delete.parse_args(strict=True)
+        exam_id = args.get('exam_id')
+        s = g.Session()
+        try:
+            exam = s.query(db.Exams).filter(db.Exams.id == exam_id).delete()
+            msg = {
+                    "i_status": 1,
+                    "err_code": -1,
+                    "msg": "",
+                    }
+        except Exception as e:
+            l.error(str(e))
+            msg = {
+                    "i_status": 0,
+                    "err_code": 998,
+                    "msg": "Query error.",
+                    }
+        finally:
+            s.close()
+
+        return msg
+
 
     # configuration change
+    #TODO: maybe later, not so emergency now
     def put(self):
         pass
 
 class ExamsCharge(Resource):
     
+    """
+    @api {get} /api/admin/exams-charge Get exams
+    @apiName Get-exams
+    @apiGroup Admin
+
+    @apiSuccess {Number} i_status Instruction success status.
+    @apiSuccess {Number} err_code Error code.
+    @apiSuccess {String} msg Message.
+    @apiVersion 0.0.1
+    """
     def get(self):
-        pass
-    
+        s = g.Session()
+        try:
+            exams = s.query(db.Exams).all() 
+            msg = {
+                    "i_status": 1,
+                    "err_code": -1,
+                    "msg": "",
+                    "deliver": json.dumps(exams, cls=db.AlchemyEncoder)
+                    }
+        except Exception as e:
+            l.error(str(e))
+            msg = {
+                    "i_status": 0,
+                    "err_code": 998,
+                    "msg": "Query error.",
+                    }
+        finally:
+            s.close()
+
+        return msg
+
+    """
+    @api {delete} /api/admin/exams-charge Delete exams
+    @apiName Delete-exams
+    @apiGroup Admin
+
+    @apiParam {String} exam_ids Exam ids like "1,2,3,4" split by ','
+
+    @apiSuccess {Number} i_status Instruction success status.
+    @apiSuccess {Number} err_code Error code.
+    @apiSuccess {String} msg Message.
+    @apiVersion 0.0.1
+    """
     def delete(self):
-        pass
+        args = exams_charge_delete.parse_args(strict=True)
+        ids = [int(id) for id in args.get('exam_ids').split(',')]
+        s = g.Session()
+        for id in ids:
+            try:
+                s.query(db.Exams).filter(db.Exams.id == id).delete()
+            except Exception as e:
+                l.error("DELETE {0} failed, ".format(id), str(e))
+            
+        try:
+            s.commit()
+            s.close()
+        except:
+            pass
+
+        msg = {
+                "i_status": 1,
+                "err_code": -1,
+                "msg": "",
+                }
+        return msg
 
 api.add_resource(ExamCharge, '/admin/exam-charge')
+api.add_resource(ExamsCharge, '/admin/exams-charge')
 
