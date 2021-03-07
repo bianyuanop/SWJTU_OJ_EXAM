@@ -9,4 +9,6 @@ errors:
   6  : u_id or username or student_id not provided when query on admin.
   7  : password or username not format well when.
   8  : Configure format err when add a exam.
+  9  : No such exam in exam.
+  10  : No such question in exam.
   999: General error.

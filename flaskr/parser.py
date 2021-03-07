@@ -48,3 +48,17 @@ exam_charge_parser_put.add_argument('question_set_config', type=str)
 ## Exams charge - delete
 exams_charge_delete = reqparse.RequestParser()
 exams_charge_delete.add_argument('exam_ids', type=str)
+
+#Exam parsers
+## -get
+exam_parser = reqparse.RequestParser()
+exam_parser.add_argument('exam_id', type=int) 
+
+#Question parser
+## -get
+question_parser = reqparse.RequestParser()
+question_parser.add_argument('question_id', type=int)
+
+#Questions parser
+questions_parser = reqparse.RequestParser()
+questions_parser.add_argument('question_ids', type=str)

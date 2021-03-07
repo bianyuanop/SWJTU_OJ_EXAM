@@ -19,6 +19,8 @@ def create_app():
     app.register_blueprint(auth.bp)
     from . import admin
     app.register_blueprint(admin.bp)
+    from . import exam
+    app.register_blueprint(exam.bp)
 
     
     _cmd.init_app(app)
